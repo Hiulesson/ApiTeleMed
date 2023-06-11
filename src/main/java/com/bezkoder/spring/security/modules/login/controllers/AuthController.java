@@ -35,7 +35,6 @@ import com.bezkoder.spring.security.modules.login.repository.RoleRepository;
 import com.bezkoder.spring.security.modules.login.security.jwt.JwtUtils;
 import com.bezkoder.spring.security.modules.login.security.services.UserDetailsImpl;
 import com.bezkoder.spring.security.modules.login.services.UserService;
-import static com.bezkoder.spring.security.modules.login.models.AuthProvider.google;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -63,7 +62,7 @@ public class AuthController
   {
 
       Authentication authentication = authenticationManager
-          .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+          .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
       SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -76,16 +75,13 @@ public class AuthController
           .collect(Collectors.toList());
 
       return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-          .body(  new UserInfoResponse( userDetails.getId(),userDetails.getUsername(),userDetails.getEmail(),roles));
+          .body(  new UserInfoResponse( userDetails.getId(),userDetails.getEmail(),roles));
   }
 
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) 
   {
-      if (userService.existsByUsername( signUpRequest.getUsername()) ) 
-      {
-        return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
-      }
+     
 
       if (userService.existsByEmail( signUpRequest.getEmail()) ) 
       {
@@ -95,8 +91,7 @@ public class AuthController
       // Create new user's account
       User user = new User
       (
-        signUpRequest.getUsername(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()), signUpRequest.getName(),
-        signUpRequest.getNumber(), signUpRequest.getStatus(), signUpRequest.getProfilePicture()            
+    		 signUpRequest.getName(),signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword())
       );
 
       Set<String> strRoles = signUpRequest.getRoles();
@@ -104,7 +99,7 @@ public class AuthController
 
       if (strRoles == null) 
       {
-          Role userRole = new Role(ERole.ROLE_USER);
+          Role userRole = new Role(ERole.ROLE_ROOT);
 
           roles.add(userRole);   
       } 

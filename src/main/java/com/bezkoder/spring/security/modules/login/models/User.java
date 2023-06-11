@@ -8,13 +8,14 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import org.springframework.lang.Nullable;
+
 @Entity
 @Table
 (
     name = "users",
     uniqueConstraints = 
     {
-       @UniqueConstraint(columnNames = "username"),
        @UniqueConstraint(columnNames = "email")
     }
 )
@@ -25,13 +26,13 @@ public class User
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @NotBlank
-  @Size(max = 20)
-  private String username;
 
   @NotBlank
   @Size(max = 120)
   private String name;
+
+  @Nullable
+  private String username;
 
   @NotBlank
   @Size(max = 50)
@@ -42,19 +43,15 @@ public class User
   @Size(max = 120)
   private String password;
 
-  @NotBlank
-  @Size(max = 20)
-  private String number;
-
-  @NotBlank
-  private String profilePicture;
-  
-  @NotBlank
-  private String status;
 
   @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"),inverseJoinColumns = @JoinColumn(name = "role_id"))
   private Set<Role> roles = new HashSet<>();
+
+  
+  @OneToMany(fetch = FetchType.LAZY)
+  @JoinTable(name = "user_imagen", joinColumns = @JoinColumn(name = "user_id"),inverseJoinColumns = @JoinColumn(name = "img_id"))
+  private Set<Images> imagens = new HashSet<>();
 
   public User() 
   {
@@ -62,17 +59,38 @@ public class User
 
   public User
   (
-    String username, String email, String password, String name,
-    String number, String status, String profilePicture
+		String name, String email, String password
   ) 
   {
-    this.username = username;
+	  this.name = name;
     this.email = email;
     this.password = password;
+    this.username = email;
+  }
+
+  public User
+  (
+		String name, String email, String password, Set<Images> imagens
+  ) 
+  {
+	  this.name = name;
+    this.email = email;
+    this.password = password;
+    this.imagens = imagens;
+    this.username = email;
+  }
+
+  public User
+  (
+    Long id, String name, String email, String password, Set<Role> roles
+  ) 
+  {
+    this.id = id;
     this.name = name;
-    this.number = number;
-    this.status = status;
-    this.profilePicture = profilePicture;
+    this.email = email;
+    this.password = password;
+    this.username = email;
+    this.roles = roles;
   }
 
   public Long getId() {
@@ -91,14 +109,14 @@ public class User
     this.name = name;
   }
 
-
   public String getUsername() {
     return username;
   }
 
-  public void setUsername(String username) {
-    this.username = username;
+  public void setUsername(String email) {
+    this.username = email;
   }
+
 
   public String getEmail() {
     return email;
@@ -124,30 +142,13 @@ public class User
     this.roles = roles;
   }
 
-  
-  public String getStatus() {
-    return status;
+  public Set<Images> getImagens() {
+      return imagens;
   }
 
-  public void setStatus(String status) {
-    this.status = status;
+  public void setImagens(Set<Images> imagens) {
+    this.imagens = imagens;
   }
 
-
-  public String getNumber() {
-    return number;
-  }
-
-  public void setNumber(String number) {
-    this.number = number;
-  }
-
-  public String getProfilePicture() {
-    return profilePicture;
-  }
-
-  public void setProfilePicture(String profilePicture) {
-    this.profilePicture = profilePicture;
-  }
 
 }
